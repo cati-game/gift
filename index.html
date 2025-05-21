@@ -67,7 +67,7 @@
 
 <!-- Canvas for confetti -->
 <canvas id="confetti" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
-<audio id="celebration-sound" src="file:///C:/Users/catiw/Downloads/minion%20happy%20birthday%20brainrot%20(mp3cut.net).mp3" preload="auto"></audio>
+<audio id="confetti-sound" src="sound/confetti.mp3" preload="auto"></audio>
 
 <script>
 const baseImages = [
@@ -107,7 +107,7 @@ function openPresent() {
   img.src = selected.src;
   img.style.filter = selected.filter;
 
-  document.getElementById('celebration-sound').play();
+  document.getElementById('confetti-sound').play();
 
   img.classList.remove('jump');
   void img.offsetWidth;
