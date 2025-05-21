@@ -175,7 +175,7 @@
   <audio id="confetti-sound" src="sound/confetti.mp3" preload="auto"></audio>
 
   <!-- Version text -->
-  <div id="version-text">v1.0.2</div>
+  <div id="version-text">v1.0.3</div>
 
 <script>
   const baseImages = [
@@ -217,7 +217,7 @@
 
     // Play sound at lowered volume
     const sound = document.getElementById('confetti-sound');
-    sound.volume = 0.01;
+    sound.volume = 0.1;
     sound.currentTime = 0;
     sound.play();
 
@@ -227,9 +227,9 @@
     img.classList.add('jump');
 
     let label = 'Normal';
-    if (selected.weight === 50) label = 'Blue';
-    else if (selected.weight === 20) label = 'Red';
-    else if (selected.weight === 1) label = 'GOLD';
+    if (selected.weight === 100) label = 'Blue';
+    else if (selected.weight === 50) label = 'Red';
+    else if (selected.weight === 5) label = 'GOLD';
 
     document.getElementById('rarity-label').textContent = `Rarity: ${label}`;
 
