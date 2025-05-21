@@ -175,7 +175,7 @@
   <audio id="confetti-sound" src="sound/confetti.mp3" preload="auto"></audio>
 
   <!-- Version text -->
-  <div id="version-text">v1.0.1</div>
+  <div id="version-text">v1.0.2</div>
 
 <script>
   const baseImages = [
@@ -280,6 +280,16 @@
       });
       requestAnimationFrame(draw);
     }
+
+    // Listen for 'r' key to restart
+    window.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() === 'r') {
+        // Only restart if the present is hidden (means result showing)
+        if (document.getElementById('present').style.display === 'none') {
+          restart();
+        }
+      }
+    });
 
     draw();
   }
