@@ -2,108 +2,199 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Random Present</title>
   <style>
+    /* Reset & body */
     body {
-      font-family: sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      background: #fefefe;
-      margin: 0;
       overflow: hidden;
+      color: #333;
+      flex-direction: column;
+      padding: 20px;
+      box-sizing: border-box;
     }
 
+    /* Present box */
     #present {
-      width: 200px;
-      height: 200px;
-      background: red;
+      width: 220px;
+      height: 220px;
+      background: #d93a3a;
+      border-radius: 30px;
       position: relative;
-      border-radius: 20px;
       cursor: pointer;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 15px 30px rgba(217, 58, 58, 0.5);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+    }
+    #present:hover {
+      transform: scale(1.05) rotate(-2deg);
+      box-shadow: 0 20px 40px rgba(217, 58, 58, 0.7);
+    }
+    #present:active {
+      transform: scale(0.95) rotate(2deg);
+      box-shadow: 0 10px 20px rgba(217, 58, 58, 0.8);
     }
 
+    /* Gold ribbons */
+    #present:before, #present:after {
+      content: "";
+      position: absolute;
+      background: linear-gradient(45deg, #ffdf5d, #c7a600);
+      box-shadow: 0 0 6px #c7a600aa;
+      border-radius: 8px;
+    }
     #present:before {
-      content: "";
-      position: absolute;
-      width: 30px;
-      height: 200px;
-      background: gold;
-      left: 85px;
+      width: 35px;
+      height: 220px;
+      left: 93px;
+      top: 0;
     }
-
     #present:after {
-      content: "";
-      position: absolute;
-      height: 30px;
-      width: 200px;
-      background: gold;
-      top: 85px;
+      height: 35px;
+      width: 220px;
+      top: 93px;
+      left: 0;
     }
 
+    /* Container for image and label */
     #image-container {
-      display: none;
+      margin-top: 25px;
       text-align: center;
+      display: none;
+      max-width: 320px;
     }
 
-    #image-container img {
-      max-width: 300px;
-      max-height: 300px;
-      margin-top: 20px;
+    #image-container h2 {
+      font-weight: 700;
+      font-size: 1.5em;
+      margin-bottom: 10px;
+      color: #222;
     }
-    
+
+    #reward-image {
+      max-width: 320px;
+      max-height: 320px;
+      border-radius: 16px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+      transition: transform 0.3s ease;
+      display: inline-block;
+    }
+
+    /* Jump animation */
     @keyframes jump {
-    0%   { transform: translateY(0); }
-    30%  { transform: translateY(-50px); }
-    50%  { transform: translateY(0); }
-    70%  { transform: translateY(-25px); }
-    100% { transform: translateY(0); }
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-25px); }
+    }
+    .jump {
+      animation: jump 0.6s ease;
     }
 
-    #reward-image.jump {
-    animation: jump 0.6s ease;
+    /* Rarity label */
+    #rarity-label {
+      font-size: 1.25em;
+      font-weight: 700;
+      margin-top: 15px;
+      color: #444;
     }
 
+    /* Restart button */
+    #restart-btn {
+      margin-top: 20px;
+      padding: 10px 30px;
+      font-size: 1em;
+      font-weight: 600;
+      background-color: #0078d7;
+      border: none;
+      border-radius: 25px;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(0, 120, 215, 0.4);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+      display: none;
+    }
+    #restart-btn:hover {
+      background-color: #005fa3;
+      box-shadow: 0 8px 16px rgba(0, 95, 163, 0.6);
+    }
+    #restart-btn:active {
+      background-color: #004b7a;
+      box-shadow: 0 4px 8px rgba(0, 75, 122, 0.8);
+      transform: translateY(2px);
+    }
+
+    /* Version text bottom right */
+    #version-text {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      font-size: 0.85em;
+      color: #666;
+      font-family: monospace;
+      user-select: none;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    /* Confetti canvas - full screen & fixed */
+    #confetti {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
   </style>
 </head>
 <body>
 
-<div id="present" onclick="openPresent()"></div>
-<div id="image-container">
-  <h2>You got:</h2>
-  <img id="reward-image" src="" alt="Reward" />
-  <p id="rarity-label" style="font-size: 1.2em; font-weight: bold; margin-top: 10px;"></p>
-  <button id="restart-btn" style="display:none; margin-top: 15px;" onclick="restart()">Restart</button>
-</div>
+  <div id="present" onclick="openPresent()" title="Click the present!"></div>
 
+  <div id="image-container">
+    <h2>You got:</h2>
+    <img id="reward-image" src="" alt="Reward" />
+    <p id="rarity-label"></p>
+    <button id="restart-btn" onclick="restart()">Restart</button>
+  </div>
 
+  <!-- Canvas for confetti -->
+  <canvas id="confetti"></canvas>
 
-<!-- Canvas for confetti -->
-<canvas id="confetti" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
-<audio id="confetti-sound" src="sound/confetti.mp3" preload="auto"></audio>
+  <!-- Sound -->
+  <audio id="confetti-sound" src="sound/confetti.mp3" preload="auto"></audio>
+
+  <!-- Version text -->
+  <div id="version-text">v1.0.0</div>
 
 <script>
-const baseImages = [
-  'https://lh4.googleusercontent.com/ZNeQfqPpWoX7FYZ6JPqsNqgRiyhlsCMealhLUXXUvRT-Rmn_B7fkwP2qJitYWuTdx0n2MfFQCJht2jeFfT9RNBk=w1280',
-  'https://lh3.googleusercontent.com/EewOwX7n82vOhamXyogFjBZAlquhC5d-u-n3o7uoPzTT1_JsBr9jlk91l_aBcouK64vzsbKH2wZM8nqWYMNLLf0=w1280',
-  'https://lh6.googleusercontent.com/hkxy3c5AFjd3kETED2aAH0nHDW7fFe5N2eO6YTeOjCkA_DbC1QN1J5qmGOjowV-U2yPi5s5R3eDVXtYvrPqh6wY=w1280',
-  'https://lh5.googleusercontent.com/U4YRJnvnTwlUGwEoUE3ZsPv3LAgy_2Hw37V5IgifoPDYx_dZ5AzwVu5ff1X2dP6N83dUHZwWbg71PlW4RwZbQ2o=w1280',
-  'https://lh5.googleusercontent.com/g8GypVUd40IqCRmtpcrOd7OPN3nUUVBcjTHyUFcqdKNZd6OS1EcQpoO46ggZqlz8TxAoaZ1f8c4VqP7ZeF2-ybU=w1280',
-  'https://lh6.googleusercontent.com/zZtjue1JhglBiwTYwqs8Z8JupnfW0gfLTi-vPoUBx1EZEGIT4M5L_5nign3cAtshId2-WFeB_se9NWHtW-ZuYec=w1280',
-];
+  const baseImages = [
+    'https://lh4.googleusercontent.com/ZNeQfqPpWoX7FYZ6JPqsNqgRiyhlsCMealhLUXXUvRT-Rmn_B7fkwP2qJitYWuTdx0n2MfFQCJht2jeFfT9RNBk=w1280',
+    'https://lh3.googleusercontent.com/EewOwX7n82vOhamXyogFjBZAlquhC5d-u-n3o7uoPzTT1_JsBr9jlk91l_aBcouK64vzsbKH2wZM8nqWYMNLLf0=w1280',
+    'https://lh6.googleusercontent.com/hkxy3c5AFjd3kETED2aAH0nHDW7fFe5N2eO6YTeOjCkA_DbC1QN1J5qmGOjowV-U2yPi5s5R3eDVXtYvrPqh6wY=w1280',
+    'https://lh5.googleusercontent.com/U4YRJnvnTwlUGwEoUE3ZsPv3LAgy_2Hw37V5IgifoPDYx_dZ5AzwVu5ff1X2dP6N83dUHZwWbg71PlW4RwZbQ2o=w1280',
+    'https://lh5.googleusercontent.com/g8GypVUd40IqCRmtpcrOd7OPN3nUUVBcjTHyUFcqdKNZd6OS1EcQpoO46ggZqlz8TxAoaZ1f8c4VqP7ZeF2-ybU=w1280',
+    'https://lh6.googleusercontent.com/zZtjue1JhglBiwTYwqs8Z8JupnfW0gfLTi-vPoUBx1EZEGIT4M5L_5nign3cAtshId2-WFeB_se9NWHtW-ZuYec=w1280',
+  ];
 
-const images = [];
+  const images = [];
 
-baseImages.forEach(src => {
-  images.push({ src, filter: 'none', weight: 100 });
-  images.push({ src, filter: 'hue-rotate(200deg)', weight: 50 });
-  images.push({ src, filter: 'hue-rotate(-60deg)', weight: 20 });
-  images.push({ src, filter: 'hue-rotate(45deg) saturate(2)', weight: 1 });
-});
-
+  baseImages.forEach(src => {
+    images.push({ src, filter: 'none', weight: 100 });
+    images.push({ src, filter: 'hue-rotate(200deg)', weight: 50 });
+    images.push({ src, filter: 'hue-rotate(-60deg)', weight: 20 });
+    images.push({ src, filter: 'hue-rotate(45deg) saturate(2)', weight: 1 });
+  });
 
   function weightedRandom(items) {
     const totalWeight = items.reduce((acc, item) => acc + item.weight, 0);
@@ -114,51 +205,53 @@ baseImages.forEach(src => {
     }
   }
 
-function restart() {
-  document.getElementById('present').style.display = 'block';
-  document.getElementById('image-container').style.display = 'none';
-  document.getElementById('restart-btn').style.display = 'none';
-  document.getElementById('reward-image').src = '';
-  document.getElementById('rarity-label').textContent = '';
+  function openPresent() {
+    document.getElementById('present').style.display = 'none';
+    document.getElementById('image-container').style.display = 'block';
+    document.getElementById('restart-btn').style.display = 'inline-block';
 
-  // Stop and reset sound
-  const sound = document.getElementById('confetti-sound');
-  sound.pause();
-  sound.currentTime = 0;
+    const selected = weightedRandom(images);
+    const img = document.getElementById('reward-image');
+    img.src = selected.src;
+    img.style.filter = selected.filter;
 
-  // Clear confetti canvas
-  const canvas = document.getElementById('confetti');
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
+    // Play sound at lowered volume
+    const sound = document.getElementById('confetti-sound');
+    sound.volume = 0.3;
+    sound.currentTime = 0;
+    sound.play();
 
-function openPresent() {
-  document.getElementById('present').style.display = 'none';
-  document.getElementById('image-container').style.display = 'block';
-  document.getElementById('restart-btn').style.display = 'inline-block';
+    // Trigger jump animation
+    img.classList.remove('jump');
+    void img.offsetWidth; // force reflow to restart animation
+    img.classList.add('jump');
 
-  const selected = weightedRandom(images);
-  const img = document.getElementById('reward-image');
-  img.src = selected.src;
-  img.style.filter = selected.filter;
+    let label = 'Normal';
+    if (selected.weight === 50) label = 'Blue';
+    else if (selected.weight === 20) label = 'Red';
+    else if (selected.weight === 1) label = 'GOLD';
 
-  const sound = document.getElementById('confetti-sound');
-  sound.volume = 0.2; // Volume range is 0.0 (silent) to 1.0 (full)
-  sound.play();
+    document.getElementById('rarity-label').textContent = `Rarity: ${label}`;
 
-  img.classList.remove('jump');
-  void img.offsetWidth;
-  img.classList.add('jump');
+    launchConfetti();
+  }
 
-  let label = 'Normal';
-  if (selected.weight === 50) label = 'Blue';
-  else if (selected.weight === 20) label = 'Red';
-  else if (selected.weight === 1) label = 'GOLD';
+  function restart() {
+    document.getElementById('present').style.display = 'flex';
+    document.getElementById('image-container').style.display = 'none';
+    document.getElementById('restart-btn').style.display = 'none';
+    document.getElementById('reward-image').src = '';
+    document.getElementById('rarity-label').textContent = '';
 
-  document.getElementById('rarity-label').textContent = `Rarity: ${label}`;
+    const sound = document.getElementById('confetti-sound');
+    sound.pause();
+    sound.currentTime = 0;
 
-  launchConfetti();
-}
+    // Clear confetti canvas
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
   function launchConfetti() {
     const canvas = document.getElementById("confetti");
@@ -191,5 +284,6 @@ function openPresent() {
     draw();
   }
 </script>
+
 </body>
 </html>
