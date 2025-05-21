@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Random Present</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #fefefe;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    #present {
+      width: 200px;
+      height: 200px;
+      background: red;
+      position: relative;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    #present:before {
+      content: "";
+      position: absolute;
+      width: 30px;
+      height: 200px;
+      background: gold;
+      left: 85px;
+    }
+
+    #present:after {
+      content: "";
+      position: absolute;
+      height: 30px;
+      width: 200px;
+      background: gold;
+      top: 85px;
+    }
+
+    #image-container {
+      display: none;
+      text-align: center;
+    }
+
+    #image-container img {
+      max-width: 300px;
+      max-height: 300px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="present" onclick="openPresent()"></div>
+<div id="image-container">
+  <h2>You got:</h2>
+  <img id="reward-image" src="" alt="Reward" />
+  <p id="rarity-label" style="font-size: 1.2em; font-weight: bold; margin-top: 10px;"></p>
+</div>
+
+<!-- Canvas for confetti -->
+<canvas id="confetti" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+<audio id="celebration-sound" src="file:///C:/Users/catiw/Downloads/minion%20happy%20birthday%20brainrot%20(mp3cut.net).mp3" preload="auto"></audio>
+
+<script>
+const baseImages = [
+  'https://lh4.googleusercontent.com/ZNeQfqPpWoX7FYZ6JPqsNqgRiyhlsCMealhLUXXUvRT-Rmn_B7fkwP2qJitYWuTdx0n2MfFQCJht2jeFfT9RNBk=w1280',
+  'https://lh3.googleusercontent.com/EewOwX7n82vOhamXyogFjBZAlquhC5d-u-n3o7uoPzTT1_JsBr9jlk91l_aBcouK64vzsbKH2wZM8nqWYMNLLf0=w1280',
+  'https://lh6.googleusercontent.com/hkxy3c5AFjd3kETED2aAH0nHDW7fFe5N2eO6YTeOjCkA_DbC1QN1J5qmGOjowV-U2yPi5s5R3eDVXtYvrPqh6wY=w1280',
+  'https://lh5.googleusercontent.com/U4YRJnvnTwlUGwEoUE3ZsPv3LAgy_2Hw37V5IgifoPDYx_dZ5AzwVu5ff1X2dP6N83dUHZwWbg71PlW4RwZbQ2o=w1280',
+  'https://lh5.googleusercontent.com/g8GypVUd40IqCRmtpcrOd7OPN3nUUVBcjTHyUFcqdKNZd6OS1EcQpoO46ggZqlz8TxAoaZ1f8c4VqP7ZeF2-ybU=w1280',
+  'https://lh6.googleusercontent.com/zZtjue1JhglBiwTYwqs8Z8JupnfW0gfLTi-vPoUBx1EZEGIT4M5L_5nign3cAtshId2-WFeB_se9NWHtW-ZuYec=w1280',
+];
+
+const images = [];
+
+baseImages.forEach(src => {
+  images.push({ src, filter: 'none', weight: 100 });
+  images.push({ src, filter: 'hue-rotate(200deg)', weight: 50 });
+  images.push({ src, filter: 'hue-rotate(-60deg)', weight: 20 });
+  images.push({ src, filter: 'hue-rotate(45deg) saturate(2)', weight: 1 });
+});
+
+
+  function weightedRandom(items) {
+    const totalWeight = items.reduce((acc, item) => acc + item.weight, 0);
+    let rand = Math.random() * totalWeight;
+    for (const item of items) {
+      if (rand < item.weight) return item;
+      rand -= item.weight;
+    }
+  }
+
+function openPresent() {
+  document.getElementById('present').style.display = 'none';
+  document.getElementById('image-container').style.display = 'block';
+
+  const selected = weightedRandom(images);
+  const img = document.getElementById('reward-image');
+  img.src = selected.src;
+  img.style.filter = selected.filter;
+
+  document.getElementById('celebration-sound').play();
+
+  img.classList.remove('jump');
+  void img.offsetWidth;
+  img.classList.add('jump');
+
+  let label = 'Normal';
+  if (selected.weight === 50) label = 'Blue';
+  else if (selected.weight === 20) label = 'Red';
+  else if (selected.weight === 1) label = 'GOLD';
+
+  document.getElementById('rarity-label').textContent = `Rarity: ${label}`;
+
+  launchConfetti();
+}
+
+  function launchConfetti() {
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = Array.from({ length: 150 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      size: Math.random() * 6 + 4,
+      speed: Math.random() * 3 + 2,
+      color: `hsl(${Math.random() * 360}, 100%, 50%)`
+    }));
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        p.y += p.speed;
+        if (p.y > canvas.height) {
+          p.y = -p.size;
+          p.x = Math.random() * canvas.width;
+        }
+      });
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+  }
+</script>
+</body>
+</html>
