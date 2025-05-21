@@ -175,7 +175,7 @@
   <audio id="confetti-sound" src="sound/confetti.mp3" preload="auto"></audio>
 
   <!-- Version text -->
-  <div id="version-text">v1.0.0</div>
+  <div id="version-text">v1.0.1</div>
 
 <script>
   const baseImages = [
@@ -190,10 +190,10 @@
   const images = [];
 
   baseImages.forEach(src => {
-    images.push({ src, filter: 'none', weight: 100 });
-    images.push({ src, filter: 'hue-rotate(200deg)', weight: 50 });
-    images.push({ src, filter: 'hue-rotate(-60deg)', weight: 20 });
-    images.push({ src, filter: 'hue-rotate(45deg) saturate(2)', weight: 1 });
+    images.push({ src, filter: 'none', weight: 1000 });
+    images.push({ src, filter: 'hue-rotate(200deg)', weight: 100 });
+    images.push({ src, filter: 'hue-rotate(-60deg)', weight: 50 });
+    images.push({ src, filter: 'hue-rotate(45deg) saturate(2)', weight: 5 });
   });
 
   function weightedRandom(items) {
@@ -217,7 +217,7 @@
 
     // Play sound at lowered volume
     const sound = document.getElementById('confetti-sound');
-    sound.volume = 0.3;
+    sound.volume = 0.01;
     sound.currentTime = 0;
     sound.play();
 
