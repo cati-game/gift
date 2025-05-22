@@ -136,7 +136,7 @@
     /* Version text bottom right */
     #version-text {
       position: fixed;
-      bottom: 10px;
+      top: 10px;
       right: 10px;
       font-size: 0.85em;
       color: #666;
@@ -155,6 +155,105 @@
       pointer-events: none;
       z-index: 9999;
     }
+
+    #collection {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      max-height: 30vh;
+      overflow: hidden;
+      background: #ffffffdd;
+      backdrop-filter: blur(8px);
+      border-top: 1px solid #ccc;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+      padding: 10px 20px;
+      z-index: 999;
+      transition: max-height 0.4s ease;
+    }
+
+    #collection.collapsed {
+      max-height: 40px;
+      padding-bottom: 5px;
+    }
+
+    #toggle-collection {
+      font-size: 0.9em;
+      margin-left: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: #0078d7;
+      transform: rotate(0deg);
+      transition: transform 0.3s ease;
+    }
+
+    #collection.collapsed #toggle-collection {
+      transform: rotate(-90deg);
+    }
+
+    #collection-grid {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      gap: 10px;
+    }
+    .collection-item {
+      flex: 0 0 auto;
+    }
+
+
+    .collection-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(1) brightness(0.6);
+      transition: filter 0.3s ease;
+    }
+
+    .collection-item.unlocked img {
+      filter: none;
+    }
+
+    @keyframes glow {
+      0%, 100% {
+        box-shadow: 0 0 8px 3px rgba(255, 215, 0, 0.8);
+      }
+      50% {
+        box-shadow: 0 0 20px 6px rgba(255, 215, 0, 1);
+      }
+    }
+
+    @keyframes sparkle {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
+      50% {
+        opacity: 0.5;
+        transform: scale(1.2) rotate(15deg);
+      }
+    }
+
+    .collection-item.new-unlocked {
+      animation: glow 5s ease-in-out infinite;
+      position: relative;
+      z-index: 10;
+    }
+
+    .collection-item.new-unlocked::after {
+      content: "✨";
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 1.5em;
+      animation: sparkle 1.5s ease-in-out infinite;
+      pointer-events: none;
+      user-select: none;
+    }
+
   </style>
 </head>
 <body>
@@ -168,21 +267,35 @@
     <button id="restart-btn" onclick="restart()">Restart</button>
   </div>
 
+  <div id="collection">
+    <h2>
+      Your Collection
+      <button id="toggle-collection" onclick="toggleCollection()">▼</button>
+    </h2>
+    <div id="collection-content" class="collapsed">
+      <div id="collection-grid"></div>
+    </div>
+  </div>
+
   <!-- Canvas for confetti -->
   <canvas id="confetti"></canvas>
 
   <!-- Sound -->
   <audio id="confetti-sound" src="sound/confetti.mp3" preload="auto"></audio>
+  <audio id="pling-sound" src="sound/pling.mp3" preload="auto"></audio>
 
   <!-- Version text -->
-  <div id="version-text">v1.0.5</div>
+  <div id="version-text">v1.1.0</div>
 
 <script>
+  window.onload = () => {
+  updateCollectionUI();
+  };
   const baseImages = [
     'images/guyu_balu.png',
     'images/luyu_lalu.png',
-    'images/ouyu_oalu2.png',
-    'images/puyu_palu2.png',
+    'images/ouyu_oalu.png',
+    'images/puyu_palu.png',
     'images/ruyu_ralu.png',
     'images/suyu_salu.png',
   ];
@@ -195,6 +308,67 @@
     images.push({ src, filter: 'hue-rotate(-60deg)', weight: 50 });
     images.push({ src, filter: 'hue-rotate(45deg) saturate(2)', weight: 5 });
   });
+
+  // Generate all unique IDs for the collection
+  const uniqueVariants = [];
+
+  baseImages.forEach(src => {
+    const base = src.split('/').pop().split('.')[0]; // guyu_balu
+    uniqueVariants.push({ id: `${base}-normal`, src, filter: 'none' });
+    uniqueVariants.push({ id: `${base}-blue`, src, filter: 'hue-rotate(200deg)' });
+    uniqueVariants.push({ id: `${base}-red`, src, filter: 'hue-rotate(-60deg)' });
+    uniqueVariants.push({ id: `${base}-gold`, src, filter: 'hue-rotate(45deg) saturate(2)' });
+  });
+
+  function getIdFromSelection(selected) {
+    const base = selected.src.split('/').pop().split('.')[0];
+    let suffix = 'normal';
+    if (selected.weight === 100) suffix = 'blue';
+    else if (selected.weight === 50) suffix = 'red';
+    else if (selected.weight === 5) suffix = 'gold';
+    return `${base}-${suffix}`;
+  }
+
+  function loadUnlocked() {
+    return JSON.parse(localStorage.getItem('unlockedCollection') || '[]');
+  }
+
+  function saveUnlocked(ids) {
+    localStorage.setItem('unlockedCollection', JSON.stringify(ids));
+  }
+
+  function updateCollectionUI(newlyUnlockedId = null) {
+    const container = document.getElementById('collection-grid');
+    container.innerHTML = '';
+    const unlocked = loadUnlocked();
+
+    uniqueVariants.forEach(variant => {
+      const div = document.createElement('div');
+      div.className = 'collection-item';
+
+      const img = document.createElement('img');
+      img.src = variant.src;
+
+      if (unlocked.includes(variant.id)) {
+        div.classList.add('unlocked');
+        img.style.filter = variant.filter; // Apply variant look
+
+        // Add glow/sparkle if this is the newly unlocked one
+        if (variant.id === newlyUnlockedId) {
+          div.classList.add('new-unlocked');
+          // Remove glow after some time
+          setTimeout(() => {
+            div.classList.remove('new-unlocked');
+          }, 4000);
+        }
+      } else {
+        img.style.filter = 'grayscale(1) brightness(0.6)';
+      }
+
+      div.appendChild(img);
+      container.appendChild(div);
+    });
+  }
 
   function weightedRandom(items) {
     const totalWeight = items.reduce((acc, item) => acc + item.weight, 0);
@@ -223,17 +397,39 @@
 
     // Trigger jump animation
     img.classList.remove('jump');
-    void img.offsetWidth; // force reflow to restart animation
+    void img.offsetWidth;
     img.classList.add('jump');
 
-    let label = 'Normal';
-    if (selected.weight === 100) label = 'Blue';
-    else if (selected.weight === 50) label = 'Red';
-    else if (selected.weight === 5) label = 'GOLD';
+    // Determine rarity
+    let rarity = 'Normal';
+    if (selected.weight === 100) rarity = 'Blue';
+    else if (selected.weight === 50) rarity = 'Red';
+    else if (selected.weight === 5) rarity = 'GOLD';
 
-    document.getElementById('rarity-label').textContent = `Rarity: ${label}`;
+    // Extract base name from filename
+    const parts = selected.src.split('/').pop().split('.')[0].split('_');
+    const name = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+
+    const displayName = (rarity === 'Normal' ? '' : `${rarity} `) + name;
+
+    document.getElementById('rarity-label').textContent = displayName;
 
     launchConfetti();
+
+    const id = getIdFromSelection(selected);
+    const unlocked = new Set(loadUnlocked());
+    const isNew = !unlocked.has(id);
+    unlocked.add(id);
+    saveUnlocked([...unlocked]);
+
+    if (isNew) {
+      const pling = document.getElementById('pling-sound');
+      pling.volume = 0.3; // Adjust volume as needed
+      pling.currentTime = 0;
+      pling.play();
+    }
+
+    updateCollectionUI(isNew ? id : null);
   }
 
   function restart() {
@@ -251,6 +447,13 @@
     const canvas = document.getElementById('confetti');
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function toggleCollection() {
+    const collection = document.getElementById('collection');
+    collection.classList.toggle('collapsed');
+    const button = document.getElementById('toggle-collection');
+    button.textContent = collection.classList.contains('collapsed') ? '►' : '▼';
   }
 
   function launchConfetti() {
