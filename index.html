@@ -254,9 +254,35 @@
       user-select: none;
     }
 
+    #reset-collection-btn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background-color: #d93a3a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(217, 58, 58, 0.6);
+      transition: background-color 0.3s ease;
+      z-index: 10000;
+      user-select: none;
+    }
+    #reset-collection-btn:hover {
+      background-color: #b13030;
+    }
+    #reset-collection-btn:active {
+      background-color: #8a2525;
+      transform: translateY(2px);
+    }
+
   </style>
 </head>
 <body>
+
+  <button id="reset-collection-btn" onclick="resetCollection()">Reset Collection</button>
 
   <div id="present" onclick="openPresent()" title="Click the present!"></div>
 
@@ -285,7 +311,7 @@
   <audio id="pling-sound" src="sound/pling.mp3" preload="auto"></audio>
 
   <!-- Version text -->
-  <div id="version-text">v1.1.0</div>
+  <div id="version-text">v1.1.1</div>
 
 <script>
   window.onload = () => {
@@ -327,6 +353,13 @@
     else if (selected.weight === 50) suffix = 'red';
     else if (selected.weight === 5) suffix = 'gold';
     return `${base}-${suffix}`;
+  }
+
+  function resetCollection() {
+    if (confirm("Are you sure you want to reset your collection? This cannot be undone.")) {
+      localStorage.removeItem('unlockedCollection');
+      updateCollectionUI();
+    }
   }
 
   function loadUnlocked() {
