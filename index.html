@@ -311,7 +311,7 @@
   <audio id="pling-sound" src="sound/pling.mp3" preload="auto"></audio>
 
   <!-- Version text -->
-  <div id="version-text">v1.1.1</div>
+  <div id="version-text">v1.1.2</div>
 
 <script>
   window.onload = () => {
@@ -329,10 +329,11 @@
   const images = [];
 
   baseImages.forEach(src => {
-    images.push({ src, filter: 'none', weight: 1000 });
-    images.push({ src, filter: 'hue-rotate(200deg)', weight: 100 });
-    images.push({ src, filter: 'hue-rotate(-60deg)', weight: 50 });
-    images.push({ src, filter: 'hue-rotate(45deg) saturate(2)', weight: 5 });
+    images.push({ src, filter: 'none', weight: 2000 });
+    images.push({ src, filter: 'hue-rotate(200deg)', weight: 1000 });
+    images.push({ src, filter: 'hue-rotate(-60deg)', weight: 500 });
+    images.push({ src, filter: 'hue-rotate(45deg) saturate(2)', weight: 50 });
+    images.push({ src, filter: 'invert(1) hue-rotate(90deg) saturate(3)', weight: 1 });
   });
 
   // Generate all unique IDs for the collection
@@ -344,14 +345,16 @@
     uniqueVariants.push({ id: `${base}-blue`, src, filter: 'hue-rotate(200deg)' });
     uniqueVariants.push({ id: `${base}-red`, src, filter: 'hue-rotate(-60deg)' });
     uniqueVariants.push({ id: `${base}-gold`, src, filter: 'hue-rotate(45deg) saturate(2)' });
+    uniqueVariants.push({ id: `${base}-ultra`, src, filter: 'invert(1) hue-rotate(90deg) saturate(3)' });
   });
 
   function getIdFromSelection(selected) {
     const base = selected.src.split('/').pop().split('.')[0];
     let suffix = 'normal';
-    if (selected.weight === 100) suffix = 'blue';
-    else if (selected.weight === 50) suffix = 'red';
-    else if (selected.weight === 5) suffix = 'gold';
+    if (selected.weight === 1000) suffix = 'blue';
+    else if (selected.weight === 500) suffix = 'red';
+    else if (selected.weight === 50) suffix = 'gold';
+    else if (selected.weight === 1) suffix = 'ultra'; // ➕ ULTRA
     return `${base}-${suffix}`;
   }
 
@@ -435,9 +438,11 @@
 
     // Determine rarity
     let rarity = 'Normal';
-    if (selected.weight === 100) rarity = 'Blue';
-    else if (selected.weight === 50) rarity = 'Red';
-    else if (selected.weight === 5) rarity = 'GOLD';
+    if (selected.weight === 1000) rarity = 'Blue';
+    else if (selected.weight === 500) rarity = 'Red';
+    else if (selected.weight === 50) rarity = 'GOLD';
+    else if (selected.weight === 1) rarity = 'ULTRA'; // ➕ ULTRA
+
 
     // Extract base name from filename
     const parts = selected.src.split('/').pop().split('.')[0].split('_');
